@@ -1,0 +1,115 @@
+- title: No schema defined
+  tests:
+    - request:
+        url: '/pets?id=abc'
+      expected_value: 'abc'
+      parameter:
+        in: query
+        name: id
+        required: true
+- title: No schema type defined
+  tests:
+    - request:
+        url: '/pets?id=abc'
+      expected_value: 'abc'
+      parameter:
+        in: query
+        name: id
+        required: true
+      schema: {}
+- title: Simple string parameter
+  tests:
+    - request:
+        url: '/pets?id=abc'
+      expected_value: 'abc'
+      parameter:
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+    - request:
+        url: '/pets?pet-id=abc'
+      expected_value: 'abc'
+      parameter:
+        in: query
+        name: pet-id
+        required: true
+        schema:
+          type: string
+    - request:
+        url: '/pets?filter[name]=abc'
+      parameter:
+        in: query
+        name: filter[name]
+        required: true
+        schema:
+          type: string
+- title: Integer parameter
+  tests:
+    - request:
+        url: '/pets?id=1'
+      expected_value: 1
+      parameter:
+        in: query
+        name: id
+        required: true
+        schema:
+          type: integer
+    - request:
+        url: '/pets?id=2.99792458e8'
+      expected_value: 299792458
+      parameter:
+        in: query
+        name: id
+        required: true
+        schema:
+          type: integer
+- title: Number parameter
+  tests:
+    - request:
+        url: '/pets?id=2.99792458e8'
+      expected_value: 299792458.0
+      parameter:
+        in: query
+        name: id
+        required: true
+        schema:
+          type: number
+    - request:
+        url: '/pets?id=1.3'
+      expected_value: 1.3
+      parameter:
+        in: query
+        name: id
+        required: true
+        schema:
+          type: number
+- title: String array parameter
+  tests:
+    - request:
+        url: '/pets?name=a&name=b&name=c'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        required: true
+        # explode: true # explode is true by default if style is form
+        # style: form # style is form by default for query parameters
+        schema:
+          type: array
+          items:
+            type: string
+    - request:
+        url: '/pets?name=a,b,c'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        required: true
+        explode: false
+        # style: form # style is form by default for query parameters
+        schema:
+          type: array
+          items:
+            type: string
