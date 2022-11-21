@@ -3,6 +3,7 @@
 require "yaml"
 require "rack"
 
+
 RSpec.describe Parmesan::Parameter do
   YAML.safe_load(File.read("spec/parameter-test-suite.yaml")).each do |topic|
     describe topic["title"] do
@@ -22,5 +23,11 @@ RSpec.describe Parmesan::Parameter do
         end
       end
     end
+  end
+
+  describe 'when parameter definition has a $refs' do
+    it 'raises an error'
+
+    it 'calls an external $ref resolver if specified'
   end
 end

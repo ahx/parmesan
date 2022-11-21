@@ -6,7 +6,6 @@
       parameter:
         in: query
         name: id
-        required: true
 - title: No schema type defined
   tests:
     - request:
@@ -15,7 +14,6 @@
       parameter:
         in: query
         name: id
-        required: true
       schema: {}
 - title: Simple string parameter
   tests:
@@ -25,7 +23,6 @@
       parameter:
         in: query
         name: id
-        required: true
         schema:
           type: string
     - request:
@@ -34,7 +31,6 @@
       parameter:
         in: query
         name: pet-id
-        required: true
         schema:
           type: string
     - request:
@@ -42,7 +38,6 @@
       parameter:
         in: query
         name: filter[name]
-        required: true
         schema:
           type: string
 - title: Integer parameter
@@ -53,16 +48,14 @@
       parameter:
         in: query
         name: id
-        required: true
         schema:
           type: integer
     - request:
-        url: '/pets?id=2.99792458e8'
-      expected_value: 299792458
+        url: '/pets?id=12'
+      expected_value: 12
       parameter:
         in: query
         name: id
-        required: true
         schema:
           type: integer
 - title: Number parameter
@@ -73,7 +66,6 @@
       parameter:
         in: query
         name: id
-        required: true
         schema:
           type: number
     - request:
@@ -82,10 +74,9 @@
       parameter:
         in: query
         name: id
-        required: true
         schema:
           type: number
-- title: String array parameter
+- title: String array explode true
   tests:
     - request:
         url: '/pets?name=a&name=b&name=c'
@@ -93,9 +84,34 @@
       parameter:
         in: query
         name: name
-        required: true
-        # explode: true # explode is true by default if style is form
-        # style: form # style is form by default for query parameters
+        # explode: true # true is the default if style is 'form'
+        # style: 'form' # 'form' is the default for query parameters
+        schema:
+          type: array
+          items:
+            type: string
+    - request:
+        url: '/pets?name=a&name=b&name=c'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        explode: true
+        style: 'form'
+        schema:
+          type: array
+          items:
+            type: string
+- title: String array explode false
+  tests:
+    - request:
+        url: '/pets?name=a,b,c'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        explode: false
+        # style: 'form' # 'form' is the default for query parameters
         schema:
           type: array
           items:
@@ -106,10 +122,73 @@
       parameter:
         in: query
         name: name
-        required: true
         explode: false
-        # style: form # style is form by default for query parameters
+        style: 'form'
         schema:
           type: array
           items:
             type: string
+    - request:
+        url: '/pets?name=a%20b%20c'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        explode: false
+        style: 'spaceDelimited'
+        schema:
+          type: array
+          items:
+            type: string
+    - request:
+        url: '/pets?name=a%7Cb%7Cc'
+      expected_value: ['a', 'b', 'c']
+      parameter:
+        in: query
+        name: name
+        explode: false
+        style: 'pipeDelimited'
+        schema:
+          type: array
+          items:
+            type: string
+- title: Object explode true
+  tests:
+    - request:
+        url: '/pets?R=100&G=200&B=150'
+      expected_value: { "R": 100, "G": 200, "B": 150 }
+      parameter:
+        in: query
+        name: name
+        explode: true
+        style: 'form'
+        schema:
+          type: object
+          items:
+            type: integer
+    - request:
+        url: '/pets?color[R]=100&color[G]=200&color[B]=150'
+      expected_value: { "R": 100, "G": 200, "B": 150 }
+      parameter:
+        in: query
+        name: color
+        explode: true
+        style: 'deepObject'
+        schema:
+          type: object
+          items:
+            type: integer
+- title: Object explode false
+  tests:
+    - request:
+        url: '/pets?color=R,100,G,200,B,150'
+      expected_value: { "R": 100, "G": 200, "B": 150 }
+      parameter:
+        in: query
+        name: name
+        explode: false
+        style: 'form'
+        schema:
+          type: object
+          items:
+            type: integer

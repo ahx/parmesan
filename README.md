@@ -1,6 +1,8 @@
 # Parmesan
 
-Parmesan parses HTTP/Rack query parameters exactly as described in an [OpenAPI](https://www.openapis.org/) definition. It supports `style`, `explode` and `schema` definitions according to OpenAPI 3.1.
+Parmesan parses HTTP/Rack (query / header / cookie) parameters exactly as described in an [OpenAPI](https://www.openapis.org/) definition. It supports `style`, `explode` and `schema` definitions according to OpenAPI 3.1.
+
+Open question: What about path parameters?
 
 ## Installation
 

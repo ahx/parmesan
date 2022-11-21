@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "type_conversion"
-
 module Parmesan
   class Parameter
     def initialize(definition)
@@ -23,14 +21,51 @@ module Parmesan
     end
 
     def value(request)
-      convert(request.params[name])
+      value = collect(request)
+      convert(value)
     end
 
-    private
+    def collect(request)
+      request.params[name]
+    end
 
     def convert(value)
       return value unless schema&.key?("type")
-      TypeConversion.convert(value, schema)
+      case schema["type"]
+      when "integer"
+        Integer(value, 10)
+      when "number"
+        Float(value)
+      when "boolean"
+        value == "true"
+      when "array"
+        parse_array(value)
+      when "object"
+        parse_object(value)
+      else
+        value
+      end
+    end
+
+    def parse_object(value)
+      value
+    end
+
+    def convert_object(value)
+    end
+
+    def parse_array(value)
+      value.split(array_delimiter)
+    end
+
+    DELIMERS = {
+      'pipeDelimited' => '|',
+      'spaceDelimited' => ' ',
+      'form' => ','
+    }.freeze
+
+    def array_delimiter
+      DELIMERS.fetch(definition["style"], ",")
     end
   end
 end
