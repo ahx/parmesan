@@ -1,3 +1,6 @@
+require:
+  - rubocop-rspec
+
 Style:
   Enabled: false
 
@@ -6,3 +9,7 @@ Layout:
 
 AllCops:
   NewCops: enable
+  SuggestExtensions: false
+
+RSpec/ExampleLength:
+  Enabled: false

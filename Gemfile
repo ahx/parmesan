@@ -10,6 +10,7 @@ gem 'rake', '~> 13.0'
 gem 'rspec', '~> 3.0'
 
 gem 'rubocop'
+gem 'rubocop-rspec'
 
 gem 'rack', '>= 2.2'
 
