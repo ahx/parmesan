@@ -54,7 +54,7 @@ module Parmesan
 
     def value(request)
       value = collect(request)
-      convert(value)
+      convert_top_level(value)
     end
 
     def collect(request)
@@ -77,7 +77,9 @@ module Parmesan
     end
 
     def collect_object(request)
-      request.params[name]
+      return request.params[name] if explode?
+
+      Hash[*request.params[name]&.split(',')]
     end
 
     def type
@@ -92,8 +94,14 @@ module Parmesan
       type == 'object'
     end
 
-    def convert(value)
+    def convert_top_level(value)
       return convert_object(value) if object?
+
+      convert(schema, value)
+    end
+
+    def convert(schema, value)
+      type = schema&.key?('type') && schema['type']
 
       case type
       when 'integer'
@@ -108,7 +116,9 @@ module Parmesan
     end
 
     def convert_object(value)
-      value
+      value.each_with_object({}) do |(k, v), hsh|
+        hsh[k] = convert(schema.fetch('properties').fetch(k), v)
+      end
     end
 
     DELIMERS = {
