@@ -8,11 +8,11 @@ Gem::Specification.new do |spec|
   spec.authors = ['Andreas Haller']
   spec.email = ['andreas.haller@invision.de']
 
-  spec.summary = 'Parmesan is an OpenAPI parameter parser'
+  spec.summary = 'Parmesan is an OpenAPI aware parameter parser'
   spec.description =
     'Parmesan parses HTTP query parameters exactly as described in an OpenAPI API description.'
   spec.homepage = 'https://github.com/ahx/parmesan'
-  spec.required_ruby_version = '>= 3.0.0'
+  spec.required_ruby_version = '>= 3.1.0'
   spec.licenses = ['MIT']
 
   spec.metadata['homepage_uri'] = spec.homepage
@@ -42,4 +42,5 @@ Gem::Specification.new do |spec|
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
+spec.metadata['rubygems_mfa_required'] = 'true'
 end

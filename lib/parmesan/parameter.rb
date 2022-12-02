@@ -83,7 +83,7 @@ module Parmesan
     end
 
     def type
-      schema&.key?('type') && schema['type']
+      schema && schema['type']
     end
 
     def array?
@@ -101,9 +101,7 @@ module Parmesan
     end
 
     def convert(schema, value)
-      type = schema&.key?('type') && schema['type']
-
-      case type
+      case schema && schema['type']
       when 'integer'
         Integer(value, 10)
       when 'number'
