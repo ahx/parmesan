@@ -4,5 +4,6 @@ require_relative 'parmesan/version'
 require_relative 'parmesan/parameter'
 
 module Parmesan
-  class Error < StandardError; end
+  class Error < StandardError
+  end
 end

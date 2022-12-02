@@ -4,27 +4,29 @@ require 'yaml'
 require 'rack'
 
 RSpec.describe Parmesan::Parameter do
-  YAML.safe_load(File.read('spec/parameter-test-suite.yaml')).each do |topic|
-    describe topic['title'] do
-      topic['tests'].each do |test|
-        definition = test.fetch('parameter')
-        example_request = test.fetch('request')
-        next unless test['focus']
+  YAML
+    .safe_load(File.read('spec/parameter-test-suite.yaml'))
+    .each do |topic|
+      describe topic['title'] do
+        topic['tests'].each do |test|
+          definition = test.fetch('parameter')
+          example_request = test.fetch('request')
+          next unless test['focus']
 
-        it "parses #{definition['name']} in #{definition['in']} '#{example_request.fetch('url')}'" do
-          url = example_request.fetch('url')
-          request = Rack::Request.new(Rack::MockRequest.env_for(url))
+          it "parses #{definition['name']} in #{definition['in']} '#{example_request.fetch('url')}'" do
+            url = example_request.fetch('url')
+            request = Rack::Request.new(Rack::MockRequest.env_for(url))
 
-          subject = described_class.new(definition)
-          value = subject.value(request)
-          expect(value).to eq(test['expected_value'])
-          expect(subject.name).to eq definition['name']
-          expect(subject.location).to eq definition['in']
-          expect(subject.schema).to eq definition['schema']
+            subject = described_class.new(definition)
+            value = subject.value(request)
+            expect(value).to eq(test['expected_value'])
+            expect(subject.name).to eq definition['name']
+            expect(subject.location).to eq definition['in']
+            expect(subject.schema).to eq definition['schema']
+          end
         end
       end
     end
-  end
 
   describe 'when parameter definition has a $refs' do
     it 'raises an error'
@@ -77,7 +79,8 @@ RSpec.describe Parmesan::Parameter do
       end
 
       it 'returns false if style is not "form"' do
-        parameter = described_class.new('style' => 'spaceDelimited', 'in' => 'query')
+        parameter =
+          described_class.new('style' => 'spaceDelimited', 'in' => 'query')
         expect(parameter.explode?).to be false
       end
     end

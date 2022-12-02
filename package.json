@@ -1,0 +1,15 @@
+{
+  "name": "parmesan",
+  "private": false,
+  "scripts": {
+    "prettify": "prettier \"**/*.{ru,rb,yml,yaml,json,rake}|bin/consumers\" --ignore-path=\".gitignore\"",
+    "lint": "npm run prettify -- --check",
+    "format": "npm run prettify -- --write"
+  },
+  "devDependencies": {
+    "@invisionag/prettier-config": "^2.1.0",
+    "@prettier/plugin-ruby": "^3.2.2",
+    "prettier": "^2.7.1"
+  },
+  "prettier": "@invisionag/prettier-config/ruby"
+}

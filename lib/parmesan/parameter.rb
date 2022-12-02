@@ -36,7 +36,7 @@ module Parmesan
       'query' => 'form',
       'path' => 'simple',
       'header' => 'simple',
-      'cookie' => 'form'
+      'cookie' => 'form',
     }.freeze
     private_constant :DEFAULT_STYLE
     def style
@@ -115,7 +115,7 @@ module Parmesan
       'pipeDelimited' => '|',
       'spaceDelimited' => ' ',
       'form' => ',',
-      'simple' => ','
+      'simple' => ',',
     }.freeze
 
     def array_delimiter

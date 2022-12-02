@@ -12,3 +12,5 @@ gem 'rspec', '~> 3.0'
 gem 'rubocop'
 
 gem 'rack', '>= 2.2'
+
+gem 'prettier'
