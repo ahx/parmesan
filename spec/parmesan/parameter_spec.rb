@@ -5,12 +5,39 @@ require 'rack'
 
 RSpec.describe Parmesan::Parameter do
   # TODO
-  #  expect(subject.name).to eq definition['name']
-  #  expect(subject.location).to eq definition['in']
-  #  expect(subject.schema).to eq definition['schema']
 
   describe 'when parameter definition has a $refs' do
     it 'raises an error'
+  end
+
+  describe '#name' do
+    it 'returns the name' do
+      definition = { 'in' => 'query', 'name' => 'id' }
+      subject = described_class.new(definition)
+      expect(subject.name).to eq 'id'
+    end
+  end
+
+  describe '#location' do
+    it 'returns the "in" value' do
+      definition = { 'in' => 'query', 'name' => 'id' }
+      subject = described_class.new(definition)
+      expect(subject.location).to eq 'query'
+    end
+  end
+
+  describe '#schema' do
+    it 'returns the schema' do
+      definition = {
+        'in' => 'query',
+        'name' => 'id',
+        'schema' => {
+          'type' => 'string',
+        },
+      }
+      subject = described_class.new(definition)
+      expect(subject.schema).to eq({ 'type' => 'string' })
+    end
   end
 
   describe '#style' do
@@ -26,17 +53,17 @@ RSpec.describe Parmesan::Parameter do
       end
 
       it 'returns "simple" for path parameters' do
-        parameter = described_class.new('in' => 'query')
-        expect(parameter.style).to eq 'form'
+        parameter = described_class.new('in' => 'path')
+        expect(parameter.style).to eq 'simple'
       end
 
       it 'returns "simple" for header parameters' do
-        parameter = described_class.new('in' => 'query')
-        expect(parameter.style).to eq 'form'
+        parameter = described_class.new('in' => 'header')
+        expect(parameter.style).to eq 'simple'
       end
 
       it 'returns "form" for cookie parameters' do
-        parameter = described_class.new('in' => 'query')
+        parameter = described_class.new('in' => 'cookie')
         expect(parameter.style).to eq 'form'
       end
     end
