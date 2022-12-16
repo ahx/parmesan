@@ -8,19 +8,15 @@ module Parmesan
       @value, @schema = value, schema
     end
 
-    attr_reader :value, :schema
-
     def call
       return convert_object(value) if object?
 
-      convert_value(schema, value)
+      convert(schema, value)
     end
 
-    def convert(value)
-      Converter.call(value, schema)
-    end
+    attr_reader :value, :schema
 
-    def convert_value(schema, value)
+    def convert(schema, value)
       case schema && schema['type']
       when 'integer'
         Integer(value, 10)
@@ -35,7 +31,7 @@ module Parmesan
 
     def convert_object(value)
       value.each_with_object({}) do |(k, v), hsh|
-        hsh[k] = convert_value(schema.fetch('properties').fetch(k), v)
+        hsh[k] = convert(schema.fetch('properties').fetch(k), v)
       end
     end
 
