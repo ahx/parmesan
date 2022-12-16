@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
 require 'set'
+require_relative 'converter'
 
 module Parmesan
   class Parameter
     def initialize(definition)
       @definition = definition
-      return if location_valid?(definition['in'])
 
-      raise ArgumentError,
-            "Parameter definition must have an 'in' property defined which should be one of #{IN_VALUES.join(', ')}"
+      if ref?(definition)
+        raise NotSupportedError, "Parameter schema with $ref is not supported: #{definition.inspect}"
+      end
+
+      unless location_valid?(definition['in'])
+        raise ArgumentError,
+          "Parameter definition must have an 'in' property defined which should be one of #{IN_VALUES.join(', ')}"
+      end
     end
 
     attr_reader :definition
@@ -54,7 +60,7 @@ module Parmesan
 
     def value(request)
       value = collect(request)
-      convert_top_level(value)
+      convert(value)
     end
 
     def collect(request)
@@ -62,6 +68,10 @@ module Parmesan
       return collect_object(request) if object?
 
       Rack::Utils.parse_query(request.query_string)[name]
+    end
+
+    def convert(value)
+      Converter.call(value, schema)
     end
 
     def collect_array(request)
@@ -94,29 +104,8 @@ module Parmesan
       type == 'object'
     end
 
-    def convert_top_level(value)
-      return convert_object(value) if object?
-
-      convert(schema, value)
-    end
-
-    def convert(schema, value)
-      case schema && schema['type']
-      when 'integer'
-        Integer(value, 10)
-      when 'number'
-        Float(value)
-      when 'boolean'
-        value == 'true'
-      else
-        value
-      end
-    end
-
-    def convert_object(value)
-      value.each_with_object({}) do |(k, v), hsh|
-        hsh[k] = convert(schema.fetch('properties').fetch(k), v)
-      end
+    def ref?(object)
+      object.values.any? { |v| v.is_a?(Hash) && v.key?('$ref') }
     end
 
     DELIMERS = {

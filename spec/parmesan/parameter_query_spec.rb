@@ -153,7 +153,7 @@ RSpec.describe Parmesan::Parameter do
   end
 
   describe 'Array explode true' do
-    it "applies explode true if explode is undefined" do
+    it 'applies explode true if explode is undefined' do
       url = '/pets?name=a&name=b&name=c'
       request = Rack::Request.new(Rack::MockRequest.env_for(url))
       definition = {
@@ -177,6 +177,26 @@ RSpec.describe Parmesan::Parameter do
       definition = {
         'in' => 'query',
         'name' => 'name',
+        'explode' => true,
+        'style' => 'form',
+        'schema' => {
+          'type' => 'array',
+          'items' => {
+            'type' => 'string',
+          },
+        },
+      }
+      subject = described_class.new(definition)
+      value = subject.value(request)
+      expect(value).to eq(%w[a b c])
+    end
+
+    it "parses name from '/pets?names[]=a&names[]=b&names[]=c'" do
+      url = '/pets?names[]=a&names[]=b&names[]=c'
+      request = Rack::Request.new(Rack::MockRequest.env_for(url))
+      definition = {
+        'in' => 'query',
+        'name' => 'names[]',
         'explode' => true,
         'style' => 'form',
         'schema' => {

@@ -4,10 +4,11 @@ require 'yaml'
 require 'rack'
 
 RSpec.describe Parmesan::Parameter do
-  # TODO
-
   describe 'when parameter definition has a $refs' do
-    it 'raises an error'
+    it 'raises an error' do
+      definition = { 'in' => 'query', 'name' => 'id', 'schema' => { '$ref' => '#/components/schemas/Pet' } }
+      expect {described_class.new(definition)}.to raise_error(Parmesan::NotSupportedError)
+    end
   end
 
   describe '#name' do
