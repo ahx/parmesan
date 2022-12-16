@@ -6,10 +6,15 @@ module Parmesan
   class Parameter
     def initialize(definition)
       @definition = definition
-      return if location_valid?(definition['in'])
 
-      raise ArgumentError,
-            "Parameter definition must have an 'in' property defined which should be one of #{IN_VALUES.join(', ')}"
+      if ref?(definition)
+        raise NotSupportedError, "Parameter schema with $ref is not supported: #{definition.inspect}"
+      end
+
+      unless location_valid?(definition['in'])
+        raise ArgumentError,
+          "Parameter definition must have an 'in' property defined which should be one of #{IN_VALUES.join(', ')}"
+      end
     end
 
     attr_reader :definition
@@ -117,6 +122,10 @@ module Parmesan
       value.each_with_object({}) do |(k, v), hsh|
         hsh[k] = convert(schema.fetch('properties').fetch(k), v)
       end
+    end
+
+    def ref?(object)
+      object.values.any? { |v| v.is_a?(Hash) && v.key?('$ref') }
     end
 
     DELIMERS = {
