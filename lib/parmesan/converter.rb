@@ -1,50 +1,80 @@
 module Parmesan
+  ##
+  # Converts a parameter value to the type specified in the schema.
   class Converter
-    def self.call(value, schema)
-      new(value, schema).call
+    ##
+    # @param input [String, Hash, Array] the value to convert
+    # @param schema [Hash] the schema to use for conversion.
+    def self.call(input, schema)
+      new(input, schema).call
     end
 
-    def initialize(value, schema)
-      @value, @schema = value, schema
+    def initialize(input, schema)
+      @input = input
+      @root_schema = schema
     end
 
     def call
-      return convert_object(value) if object?
-
-      convert(schema, value)
+      convert(@input, @root_schema)
     end
 
-    attr_reader :value, :schema
+    private
 
-    def convert(schema, value)
-      case schema && schema['type']
+    def convert(value, schema)
+      check_supported!(schema)
+      case type(schema)
       when 'integer'
         Integer(value, 10)
       when 'number'
         Float(value)
       when 'boolean'
         value == 'true'
+      when 'object'
+        convert_object(value, schema)
+      when 'array'
+        convert_array(value, schema)
       else
         value
       end
     end
 
-    def convert_object(value)
-      value.each_with_object({}) do |(k, v), hsh|
-        hsh[k] = convert(schema.fetch('properties').fetch(k), v)
+    def check_supported!(schema)
+      if schema && schema.key?('$ref')
+        raise NotSupportedError,
+              "$ref is not supported: #{@root_schema.inspect}"
       end
     end
 
-    def type
+    def type(schema)
       schema && schema['type']
     end
 
-    def array?
-      type == 'array'
+    def convert_object(object, schema)
+      object.each_with_object({}) do |(key, value), hsh|
+        hsh[key] = convert(value, schema.fetch('properties').fetch(key))
+      end
     end
 
-    def object?
-      type == 'object'
+    def convert_array(array, schema)
+      item_schema = schema['items']
+      prefix_schemas = schema['prefixItems']
+      if prefix_schemas
+        return convert_array_with_prefixes(array, prefix_schemas, item_schema)
+      end
+      array.map { |item| convert(item, item_schema) }
+    end
+
+    def convert_array_with_prefixes(array, prefix_schemas, item_schema)
+      prefixes =
+        array
+          .slice(0, prefix_schemas.size)
+          .each_with_index
+          .map { |item, index| convert(item, prefix_schemas[index]) }
+      array =
+        array[prefix_schemas.size..-1].map! do |item|
+          convert(item, item_schema)
+        end
+      prefixes + array
     end
   end
 end

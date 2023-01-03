@@ -6,8 +6,16 @@ require 'rack'
 RSpec.describe Parmesan::Parameter do
   describe 'when parameter definition has a $refs' do
     it 'raises an error' do
-      definition = { 'in' => 'query', 'name' => 'id', 'schema' => { '$ref' => '#/components/schemas/Pet' } }
-      expect {described_class.new(definition)}.to raise_error(Parmesan::NotSupportedError)
+      definition = {
+        'in' => 'query',
+        'name' => 'id',
+        'schema' => {
+          '$ref' => '#/components/schemas/Pet',
+        },
+      }
+      expect { described_class.new(definition) }.to raise_error(
+        Parmesan::NotSupportedError,
+      )
     end
   end
 
