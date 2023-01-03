@@ -4,18 +4,12 @@ require 'set'
 require_relative 'converter'
 
 module Parmesan
+  ##
+  # Represents a parameter in an OpenAPI operation.
   class Parameter
     def initialize(definition)
+      check_supported!(definition)
       @definition = definition
-
-      if ref?(definition)
-        raise NotSupportedError, "Parameter schema with $ref is not supported: #{definition.inspect}"
-      end
-
-      unless location_valid?(definition['in'])
-        raise ArgumentError,
-          "Parameter definition must have an 'in' property defined which should be one of #{IN_VALUES.join(', ')}"
-      end
     end
 
     attr_reader :definition
@@ -26,12 +20,6 @@ module Parmesan
 
     def location
       definition['in']
-    end
-
-    IN_VALUES = Set.new(%w[query header path cookie]).freeze
-    private_constant :IN_VALUES
-    def location_valid?(location)
-      IN_VALUES.include?(location)
     end
 
     def schema
@@ -104,8 +92,18 @@ module Parmesan
       type == 'object'
     end
 
-    def ref?(object)
-      object.values.any? { |v| v.is_a?(Hash) && v.key?('$ref') }
+    VALID_LOCATIONS = Set.new(%w[query header path cookie]).freeze
+    private_constant :VALID_LOCATIONS
+
+    def check_supported!(definition)
+      if definition.values.any? { |v| v.is_a?(Hash) && v.key?('$ref') }
+        raise NotSupportedError,
+              "Parameter schema with $ref is not supported: #{definition.inspect}"
+      end
+      unless VALID_LOCATIONS.include?(definition['in'])
+        raise ArgumentError,
+              "Parameter definition must have an 'in' property defined which should be one of #{VALID_LOCATIONS.join(', ')}"
+      end
     end
 
     DELIMERS = {

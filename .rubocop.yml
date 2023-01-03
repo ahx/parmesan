@@ -13,3 +13,6 @@ AllCops:
 
 RSpec/ExampleLength:
   Enabled: false
+
+Metrics/MethodLength:
+  Max: 20
