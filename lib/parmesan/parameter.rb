@@ -18,21 +18,28 @@ module Parmesan
       definition['name']
     end
 
+    ##
+    # @return [String] The location of the parameter in the request, "path", "query", "header" or "cookie".
     def location
       definition['in']
+    end
+
+    ##
+    # @param request [Rack::Request]
+    # @return The value of the parameter from the request. This will first collect the value and then convert it to the type defined in the schema.
+    def value(request)
+      value = collect(request)
+      self.convert(value)
     end
 
     def schema
       definition['schema']
     end
 
-    DEFAULT_STYLE = {
-      'query' => 'form',
-      'path' => 'simple',
-      'header' => 'simple',
-      'cookie' => 'form',
-    }.freeze
-    private_constant :DEFAULT_STYLE
+    def type
+      schema && schema['type']
+    end
+
     def style
       return definition['style'] if definition['style']
 
@@ -46,21 +53,36 @@ module Parmesan
       false
     end
 
-    def value(request)
-      value = collect(request)
-      convert(value)
-    end
-
+    ##
+    # @param request [Rack::Request]
+    # @return The value of the parameter from the request.
+    #         This will be an array if the parameter schema type is an array type or an object if the parameter schema type is object,
+    #         but it will not try to convert nested values.
+    #         If the parameter schema type is not an array or object, the value will be a string.
+    #         If the parameter is not present in the request, nil will be returned.
     def collect(request)
-      return collect_array(request) if array?
-      return collect_object(request) if object?
+      return collect_array(request) if type == 'array'
+      return collect_object(request) if type == 'object'
 
       Rack::Utils.parse_query(request.query_string)[name]
     end
 
+    ##
+    # @param value The value to convert.
+    # @return The converted value. This method will convert the string/array/object value of the parameter to the type defined in the schema.
     def convert(value)
       Converter.call(value, schema)
     end
+
+    DEFAULT_STYLE = {
+      'query' => 'form',
+      'path' => 'simple',
+      'header' => 'simple',
+      'cookie' => 'form',
+    }.freeze
+    private_constant :DEFAULT_STYLE
+
+    private
 
     def collect_array(request)
       return request.params[name].split(array_delimiter) unless explode?
@@ -78,18 +100,6 @@ module Parmesan
       return request.params[name] if explode?
 
       Hash[*request.params[name]&.split(',')]
-    end
-
-    def type
-      schema && schema['type']
-    end
-
-    def array?
-      type == 'array'
-    end
-
-    def object?
-      type == 'object'
     end
 
     VALID_LOCATIONS = Set.new(%w[query header path cookie]).freeze
